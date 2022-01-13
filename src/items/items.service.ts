@@ -1,27 +1,30 @@
 import { Injectable } from '@nestjs/common';
+import { Connection } from 'typeorm';
 
 import { CreateItemDto } from './dto/create-item.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
 
 @Injectable()
 export class ItemsService {
-  create(createItemDto: CreateItemDto) {
+  constructor(private connection: Connection) {}
+
+  async create(createItemDto: CreateItemDto) {
     return `This action adds a new item: ${createItemDto}`;
   }
 
-  findAll() {
+  async findAll() {
     return `This action returns all items`;
   }
 
-  findOne(id: number) {
+  async findOne(id: number) {
     return `This action returns a #${id} item`;
   }
 
-  update(id: number, updateItemDto: UpdateItemDto) {
+  async update(id: number, updateItemDto: UpdateItemDto) {
     return `This action updates a #${id} item`;
   }
 
-  remove(id: number) {
+  async remove(id: number) {
     return `This action removes a #${id} item`;
   }
 }
