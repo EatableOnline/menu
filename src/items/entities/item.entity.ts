@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Type } from 'class-transformer';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class Item {
@@ -12,5 +13,6 @@ export class Item {
   image: string;
 
   @Column()
-  price: number;
+  @Type(() => parseFloat)
+  price: string;
 }
