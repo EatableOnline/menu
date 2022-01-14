@@ -19,7 +19,7 @@ export class ItemsService {
     // Check if item already exists
     const { name, image, price } = createItemDto;
 
-    const qb = getRepository(Item)
+    const qb = await getRepository(Item)
       .createQueryBuilder('item')
       .where('item.name = :name', { name })
       .orWhere('item.image = :image', { image });
@@ -27,8 +27,12 @@ export class ItemsService {
     const item = await qb.getOne();
 
     if (item) {
-      throw this.respBadRequest(
-        'This item already exists; name and image must be unique.',
+      throw await this.respBadRequest(
+        {
+          name: 'This item already exists; name and image must be unique.',
+        },
+        undefined,
+        HttpStatus.BAD_REQUEST,
       );
     }
 
@@ -40,11 +44,15 @@ export class ItemsService {
 
     const err = await validate(newItem);
     if (err.length > 0) {
-      throw this.respBadRequest('Invalid input');
-    } else {
-      const savedItem = await this.itemRepository.save(newItem);
-      return this.buildItemRO(savedItem);
+      throw await this.respBadRequest(
+        { name: 'Invalid input' },
+        undefined,
+        HttpStatus.BAD_REQUEST,
+      );
     }
+
+    const savedItem = await this.itemRepository.save(newItem);
+    return await this.buildItemRO(savedItem);
   }
 
   async findAll() {
@@ -52,11 +60,37 @@ export class ItemsService {
   }
 
   async findOne(id: number) {
-    return `This action returns a #${id} item`;
+    const item = await this.itemRepository.findOne(id);
+
+    if (!item) {
+      throw await this.respBadRequest(
+        { Item: 'Not found' },
+        undefined,
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    return await this.buildItemRO(item);
   }
 
   async update(id: number, updateItemDto: UpdateItemDto) {
-    return `This action updates a #${id} item`;
+    const qb = await getRepository(Item)
+      .createQueryBuilder('item')
+      .where('id = :id', { id });
+
+    const item = await qb.getOne();
+
+    if (item === undefined) {
+      throw await this.respBadRequest(
+        { name: 'Invalid input' },
+        undefined,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    await qb.update().set(updateItemDto).execute();
+
+    return await this.buildItemRO({ ...{ id: id }, ...updateItemDto });
   }
 
   async remove(id: number) {
@@ -64,25 +98,27 @@ export class ItemsService {
   }
 
   // TODO: Put this in a 'common' dir
-  private respBadRequest(
-    errDetail: string,
+  private async respBadRequest(
+    errDetail: object,
     errMessage = 'Input validation failed',
+    errCode: number,
   ) {
-    const error = { name: errDetail };
-    return new HttpException(
-      { message: errMessage, error },
-      HttpStatus.BAD_REQUEST,
-    );
+    return new HttpException({ message: errMessage, errDetail }, errCode);
   }
 
-  private buildItemRO(item: Item) {
-    const itemRO = {
-      id: item.id,
-      name: item.name,
-      image: item.image,
-      price: item.price,
-    };
+  private async buildItemRO(item: Item | object) {
+    let itemRO: object;
+    if (item instanceof Item) {
+      itemRO = {
+        id: item.id,
+        name: item.name,
+        image: item.image,
+        price: item.price,
+      };
+    } else {
+      itemRO = item;
+    }
 
-    return { item: itemRO };
+    return { Item: itemRO };
   }
 }
