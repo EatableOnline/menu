@@ -94,7 +94,7 @@ export class ItemsService {
   }
 
   async remove(id: number) {
-    return `This action removes a #${id} item`;
+    return await this.itemRepository.delete(id);
   }
 
   // TODO: Put this in a 'common' dir
