@@ -1,8 +1,8 @@
-import { IsAlphanumeric, IsNotEmpty, IsNumberString, IsUrl } from 'class-validator';
+import { IsNotEmpty, IsNumberString, IsString, IsUrl } from 'class-validator';
 
 export class CreateItemDto {
   @IsNotEmpty()
-  @IsAlphanumeric()
+  @IsString()
   readonly name: string;
 
   @IsNotEmpty()
