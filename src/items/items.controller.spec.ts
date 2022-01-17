@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { Item } from './entities/item.entity';
 
+import { itemStub, updateItemStub } from './__mocks__/items.stub';
+import { Item } from './entities/item.entity';
 import { ItemsController } from './items.controller';
 import { ItemsService } from './items.service';
-import { itemStub, updateItemStub } from './__mocks__/items.stub';
 
 jest.mock('./items.service');
 
