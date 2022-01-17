@@ -17,7 +17,3 @@ export const updateItemStub = (): Item => {
     price: '48.99',
   };
 };
-
-export const deleteItemStub = () => {
-  return {};
-};

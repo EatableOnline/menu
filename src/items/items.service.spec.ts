@@ -1,13 +1,16 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
-import {
-  itemStub,
-  deleteItemStub,
-  updateItemStub,
-} from './__mocks__/items.stub';
+import { itemStub, updateItemStub } from './__mocks__/items.stub';
 import { ItemsService } from './items.service';
 
 jest.mock('./items.service');
+
+const item = itemStub();
+const itemDto = {
+  name: 'Cheese Burger',
+  image: 'https://image-server.com/cheese-burger.png',
+  price: '49.99',
+};
 
 describe('ItemsService', () => {
   let service: ItemsService;
@@ -23,13 +26,6 @@ describe('ItemsService', () => {
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
-
-  const item = itemStub();
-  const itemDto = {
-    name: 'Cheese Burger',
-    image: 'https://image-server.com/cheese-burger.png',
-    price: '49.99',
-  };
 
   it('should create a new item', async () => {
     expect(await service.create(itemDto)).toStrictEqual(item);
@@ -52,6 +48,6 @@ describe('ItemsService', () => {
   });
 
   it('should remove an item', async () => {
-    expect(await service.remove(1)).toStrictEqual(deleteItemStub());
+    expect(await service.remove(1)).toStrictEqual({});
   });
 });
