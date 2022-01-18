@@ -1,5 +1,5 @@
-import { validate } from 'class-validator';
-import { getRepository, Repository } from 'typeorm';
+import { validate, ValidationError } from 'class-validator';
+import { getRepository, Repository, SelectQueryBuilder } from 'typeorm';
 
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -15,16 +15,18 @@ export class ItemsService {
     private readonly itemRepository: Repository<Item>,
   ) {}
 
-  async create(createItemDto: CreateItemDto) {
+  async create(createItemDto: CreateItemDto): Promise<{
+    Item: object;
+  }> {
     // Check if item already exists
     const { name, image, price } = createItemDto;
 
-    const qb = await getRepository(Item)
+    const qb: SelectQueryBuilder<Item> = await getRepository(Item)
       .createQueryBuilder('item')
       .where('item.name = :name', { name })
       .orWhere('item.image = :image', { image });
 
-    const item = await qb.getOne();
+    const item: Item = await qb.getOne();
 
     if (item) {
       throw await this.respBadRequest(
@@ -42,7 +44,7 @@ export class ItemsService {
     newItem.image = image;
     newItem.price = price;
 
-    const err = await validate(newItem);
+    const err: ValidationError[] = await validate(newItem);
     if (err.length > 0) {
       throw await this.respBadRequest(
         { name: 'Invalid input' },
@@ -51,16 +53,18 @@ export class ItemsService {
       );
     }
 
-    const savedItem = await this.itemRepository.save(newItem);
+    const savedItem: Item = await this.itemRepository.save(newItem);
     return await this.buildItemRO(savedItem);
   }
 
-  async findAll() {
+  async findAll(): Promise<Item[]> {
     return await this.itemRepository.find();
   }
 
-  async findOne(id: number) {
-    const item = await this.itemRepository.findOne(id);
+  async findOne(id: number): Promise<{
+    Item: object;
+  }> {
+    const item: Item = await this.itemRepository.findOne(id);
 
     if (!item) {
       throw await this.respBadRequest(
@@ -73,12 +77,17 @@ export class ItemsService {
     return await this.buildItemRO(item);
   }
 
-  async update(id: number, updateItemDto: UpdateItemDto) {
-    const qb = await getRepository(Item)
+  async update(
+    id: number,
+    updateItemDto: UpdateItemDto,
+  ): Promise<{
+    Item: object;
+  }> {
+    const qb: SelectQueryBuilder<Item> = await getRepository(Item)
       .createQueryBuilder('item')
       .where('id = :id', { id });
 
-    const item = await qb.getOne();
+    const item: Item = await qb.getOne();
 
     if (item === undefined) {
       throw await this.respBadRequest(
@@ -93,20 +102,22 @@ export class ItemsService {
     return await this.buildItemRO({ ...{ id: id }, ...updateItemDto });
   }
 
-  async remove(id: number) {
+  async remove(id: number): Promise<void> {
     await this.itemRepository.delete(id);
   }
 
-  // TODO: Put this in a 'common' dir
+  // TODO: Put this in a `common` or `utils` dir
   private async respBadRequest(
     errDetail: object,
     errMessage = 'Input validation failed',
     errCode: number,
-  ) {
+  ): Promise<HttpException> {
     return new HttpException({ message: errMessage, errDetail }, errCode);
   }
 
-  private async buildItemRO(item: Item | object) {
+  private async buildItemRO(item: Item | object): Promise<{
+    Item: object;
+  }> {
     let itemRO: object;
     if (item instanceof Item) {
       itemRO = {
