@@ -1,5 +1,5 @@
 class Order {
-  readonly item: string;
+  readonly items: string[];
 }
 
 export class DeliverOrderDto extends Order {
