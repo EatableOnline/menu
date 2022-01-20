@@ -106,7 +106,6 @@ export class ItemsService {
     await this.itemRepository.delete(id);
   }
 
-  // TODO: Put this in a `common` or `utils` dir
   private async respBadRequest(
     errDetail: object,
     errMessage = 'Input validation failed',
