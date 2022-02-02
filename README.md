@@ -1,3 +1,3 @@
 # Menu backend service
 
-API Gateway that sits behind a client or frontend app that takes the user's orders
+API Gateway that serves as a backend for an app taking user inputs (a.k.a online orders).
